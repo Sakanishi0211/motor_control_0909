@@ -78,18 +78,21 @@ uint8_t init_pwm(){
     // Find out which PWM slice is connected to GPIO 0 (it's slice 0)
     slice_num = pwm_gpio_to_slice_num(3);
 
-    // Set period
+    // Set period T
+    // T=(wrap+1)*clkdiv/sysclock
+    // T=(24999+1)*100/125e6=25000e2/125e6=200e-4=0.02s(=50Hz)
     pwm_set_wrap(slice_num, 24999);
     pwm_set_clkdiv(slice_num, 100.0);
-    // Set channel A output high for one cycle before dropping
-    pwm_set_chan_level(slice_num, PWM_CHAN_A, 2315);
-    // Set initial B output high for three cycles before dropping
-    pwm_set_chan_level(slice_num, PWM_CHAN_B, 1330);
+    // Set channel A Duty
+    // DutyA=clkdiv*PWM_CHAN_A/sysclock
+    pwm_set_chan_level(slice_num, PWM_CHAN_A, DUTYMAX);
+    // Set initial B Duty
+    // DutyB=clkdiv*PWM_CHAN_B/sysclock
+    pwm_set_chan_level(slice_num, PWM_CHAN_B, DUTYMIN);
     // Set the PWM running
     pwm_set_enabled(slice_num, true);
-    /// \end::setup_pwm[]
     sleep_ms(2000);
-    pwm_set_chan_level(slice_num, PWM_CHAN_A, 1330);
+    pwm_set_chan_level(slice_num, PWM_CHAN_A, DUTYMIN);
 }
 
 // RX interrupt handler
