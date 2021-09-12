@@ -14,14 +14,18 @@
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
+typedef unsigned char uint8_t;
+
+
 static int chars_rxed = 0;
 static int data_num=0;
 uint8_t sbus_data[25];
 uint8_t ch;
 
-int main() {
+uint_8_t init_serial(void){
+
     /// シリアル通信の設定
-    stdio_init_all();
+
     // Set up our UART with a basic baud rate.
     uart_init(UART_ID, 2400);
 
@@ -55,9 +59,12 @@ int main() {
 
     // Now enable the UART to send interrupts - RX only
     uart_set_irq_enables(UART_ID, true, false);
+}
 
-    // PWMの設定
-    // Tell GPIO 0 and 1 they are allocated to the PWM
+init_pwm(){
+
+   // PWMの設定
+   // Tell GPIO 0 and 1 they are allocated to the PWM
     gpio_set_function(2, GPIO_FUNC_PWM);
     gpio_set_function(3, GPIO_FUNC_PWM);
 
@@ -76,15 +83,6 @@ int main() {
     /// \end::setup_pwm[]
     sleep_ms(2000);
     pwm_set_chan_level(slice_num, PWM_CHAN_A, 1330);
-    sleep_ms(5000);
-    while(true){
-      tight_loop_contents();
-      pwm_set_chan_level(slice_num, PWM_CHAN_A, 1450);
-      sleep_ms(2000);
-      pwm_set_chan_level(slice_num, PWM_CHAN_A, 1330);
-      sleep_ms(2000);
-    }
-    
 }
 
 // RX interrupt handler
@@ -147,6 +145,20 @@ void on_uart_rx() {
         
     }
 }
-//githubtest
-//hoge
-//
+
+int main() {
+    stdio_init_all();
+    init_serial();
+    inti_pwm();
+
+    sleep_ms(5000);
+    while(true){
+      tight_loop_contents();
+      pwm_set_chan_level(slice_num, PWM_CHAN_A, 1450);
+      sleep_ms(2000);
+      pwm_set_chan_level(slice_num, PWM_CHAN_A, 1330);
+      sleep_ms(2000);
+    }
+    
+}
+
