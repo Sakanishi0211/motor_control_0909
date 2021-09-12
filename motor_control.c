@@ -33,23 +33,20 @@ uint8_t init_serial(void){
 
     /// シリアル通信の設定
 
-    // Set up our UART with a basic baud rate.
+    // UARTを基本の通信速度で設定
     uart_init(UART_ID, 2400);
 
-    // Set the TX and RX pins by using the function select on the GPIO
-    // Set datasheet for more information on function select
+    // 指定のGPIOをUARTのTX、RXピンに設定する
     gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
     gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
 
-    // Actually, we want a different speed
-    // The call will return the actual baud rate selected, which will be as close as
-    // possible to that requested
+    //指定のUARTを指定の通信速度に設定する
     int actual = uart_set_baudrate(UART_ID, BAUD_RATE);
 
-    // Set UART flow control CTS/RTS, we don't want these, so turn them off
+    //UART flow control CTS/RTSを使用しない設定
     uart_set_hw_flow(UART_ID, false, false);
 
-    // Set our data format
+    //通信フォーマットの設定
     uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
 
     // Turn off FIFO's - we want to do this character by character
