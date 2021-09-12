@@ -14,15 +14,22 @@
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
-typedef unsigned char uint8_t;
+//typedef unsigned char uint8_t;
 
-
+//グルーバル変数の宣言
 static int chars_rxed = 0;
 static int data_num=0;
 uint8_t sbus_data[25];
 uint8_t ch;
+uint slice_num;
 
-uint_8_t init_serial(void){
+//関数の宣言
+uint8_t init_serial(void);
+uint8_t init_pwm();
+void on_uart_rx(); 
+
+
+uint8_t init_serial(void){
 
     /// シリアル通信の設定
 
@@ -61,7 +68,7 @@ uint_8_t init_serial(void){
     uart_set_irq_enables(UART_ID, true, false);
 }
 
-init_pwm(){
+uint8_t init_pwm(){
 
    // PWMの設定
    // Tell GPIO 0 and 1 they are allocated to the PWM
@@ -69,7 +76,7 @@ init_pwm(){
     gpio_set_function(3, GPIO_FUNC_PWM);
 
     // Find out which PWM slice is connected to GPIO 0 (it's slice 0)
-    uint slice_num = pwm_gpio_to_slice_num(3);
+    slice_num = pwm_gpio_to_slice_num(3);
 
     // Set period
     pwm_set_wrap(slice_num, 24999);
@@ -100,15 +107,6 @@ void on_uart_rx() {
             //printf("%02X ",ch);
             chars_rxed++;            
         }
-
-
-        // Can we send it back?
-        //if (uart_is_writable(UART_ID)) {
-        //    // Change it slightly first!
-            //ch++;
-        //    uart_putc(UART_ID, ch);
-        //}
-        
         
         switch(chars_rxed){
             case 3:
@@ -149,7 +147,7 @@ void on_uart_rx() {
 int main() {
     stdio_init_all();
     init_serial();
-    inti_pwm();
+    init_pwm();
 
     sleep_ms(5000);
     while(true){

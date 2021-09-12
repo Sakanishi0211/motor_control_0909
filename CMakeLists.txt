@@ -13,7 +13,7 @@ add_executable(motor_control
 )
 
 # Pull in our pico_stdlib which pulls in commonly used features
-target_link_libraries(motor_control pico_stdlib hardware_uart)
+target_link_libraries(motor_control pico_stdlib hardware_uart hardware_pwm)
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(motor_control 1)
