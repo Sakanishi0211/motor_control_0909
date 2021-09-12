@@ -5,16 +5,19 @@
 #include "hardware/irq.h"
 
 #define UART_ID uart0
-#define BAUD_RATE 100000//115200
+#define BAUD_RATE 100000
 #define DATA_BITS 8
-#define STOP_BITS 2//1
+#define STOP_BITS 2
 #define PARITY    UART_PARITY_EVEN
+#define DUTYMIN 1330
+#define DUTYMAX 2315
+#define CH3MAX 1707
+#define CH3MIN 321
+
 
 //０番と1番ピンに接続
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
-
-//typedef unsigned char uint8_t;
 
 //グルーバル変数の宣言
 static int chars_rxed = 0;
@@ -22,12 +25,12 @@ static int data_num=0;
 uint8_t sbus_data[25];
 uint8_t ch;
 uint slice_num;
+uint16_t Chdata[6];
 
 //関数の宣言
 uint8_t init_serial(void);
 uint8_t init_pwm();
 void on_uart_rx(); 
-
 
 uint8_t init_serial(void){
 
@@ -107,37 +110,35 @@ void on_uart_rx() {
         
         switch(chars_rxed){
             case 3:
-                data=(sbus_data[1]|(sbus_data[2]<<8)&0x07ff);
-                printf("%04d ",data);
+                Chdata[0]=(sbus_data[1]|(sbus_data[2]<<8)&0x07ff);
+                //printf("%04d ",data);
                 break;
             case 4:
-                data=(sbus_data[3]<<5|sbus_data[2]>>3)&0x07ff;
-                printf("%04d ",data);
+                Chdata[1]=(sbus_data[3]<<5|sbus_data[2]>>3)&0x07ff;
+                //printf("%04d ",data);
                 break;
             case 6:
-                data=(sbus_data[3]>>6|sbus_data[4]<<2|sbus_data[5]<<10)&0x07ff;
-                printf("%04d ",data);
+                Chdata[2]=(sbus_data[3]>>6|sbus_data[4]<<2|sbus_data[5]<<10)&0x07ff;
+                //printf("%04d ",data);
                 break;
             case 7:
-                data=(sbus_data[6]<<7|sbus_data[5]>>1)&0x07ff;
-                printf("%04d ",data);
+                Chdata[3]=(sbus_data[6]<<7|sbus_data[5]>>1)&0x07ff;
+                //printf("%04d ",data);
                 break;
             case 8:
-                data=(sbus_data[7]<<4|sbus_data[6]>>4)&0x07ff;
-                printf("%04d ",data);
+                Chdata[4]=(sbus_data[7]<<4|sbus_data[6]>>4)&0x07ff;
+                //printf("%04d ",data);
                 break;
             case 10:
-                data=(sbus_data[7]>>7|sbus_data[8]<<1|sbus_data[9]<<9)&0x07ff;
-                printf("%04d ",data);
+                Chdata[5]=(sbus_data[7]>>7|sbus_data[8]<<1|sbus_data[9]<<9)&0x07ff;
+                //printf("%04d ",data);
                 break;
-                
         }
 
         if(chars_rxed==25){
-            printf("\n");
+            //printf("\n");
             chars_rxed=0;
         }
-        
     }
 }
 
@@ -146,14 +147,17 @@ int main() {
     init_serial();
     init_pwm();
 
+    uint16_t duty;
+
     sleep_ms(5000);
     while(true){
       tight_loop_contents();
-      pwm_set_chan_level(slice_num, PWM_CHAN_A, 1450);
-      sleep_ms(2000);
-      pwm_set_chan_level(slice_num, PWM_CHAN_A, 1330);
-      sleep_ms(2000);
+      duty=(float)(DUTYMAX-DUTYMIN)*(float)(Chdata[2]-CH3MIN)/(float)(CH3MAX-CH3MIN)+DUTYMIN;
+      if (duty>DUTYMAX)duty=DUTYMAX;
+      if (duty<DUTYMIN)duty=DUTYMIN;
+      pwm_set_chan_level(slice_num, PWM_CHAN_A, duty);
+      printf("%04d %04d %04d %04d %04d %04d \n",Chdata[0], Chdata[1], duty, Chdata[3], Chdata[4], Chdata[5]);
+      sleep_ms(10);
     }
-    
 }
 
